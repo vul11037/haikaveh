@@ -1,0 +1,702 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>『虚空终端』-漫卷琼林</title>
+    <link rel="icon" href="https://raw.githubusercontent.com/vul11037/haikaveh/refs/heads/main/%E6%BC%AB%E5%8D%B7%E7%90%BC%E6%9E%97/image/favicon.png">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background: linear-gradient(145deg, #eef9f0 0%, #def5e5 100%);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            min-height: 100vh;
+            overflow-x: hidden;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        /* 顶部导航栏 — 标题严格居中 */
+        .header {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            max-width: 640px;
+            margin: 0 auto;
+            background-color: rgba(255, 255, 255, 0.88);
+            backdrop-filter: blur(16px);
+            border-bottom: 1px solid rgba(160, 190, 140, 0.35);
+            padding: 12px 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-weight: 600;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.02);
+        }
+
+        /* 左右两侧各占 1 份，保证中间标题居中 */
+        .header-left {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+            gap: 6px;
+            font-size: 17px;
+            color: #2b7a4b;
+        }
+
+        .header-left img {
+            width: 24px;
+            height: 24px;
+            display: block;
+        }
+
+        .header-title {
+            flex: 0 1 auto;
+            font-size: 20px;
+            font-weight: 620;
+            background: linear-gradient(135deg, #22643e, #3a9b6e);
+            background-clip: text;
+            -webkit-background-clip: text;
+            color: transparent;
+            text-align: center;
+            white-space: nowrap;
+        }
+
+        .header-right {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+        }
+
+        .header-right img {
+            width: 24px;
+            height: 24px;
+            display: block;
+        }
+
+        .feed-container {
+            max-width: 640px;
+            margin: 0 auto;
+            background-color: transparent;
+            min-height: 100vh;
+        }
+
+        .refresh-indicator {
+            width: 100%;
+            overflow: hidden;
+            height: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            background-color: rgba(222, 245, 229, 0.8);
+            transition: height 0.2s ease-out;
+            font-size: 13px;
+            color: #2b6e46;
+        }
+
+        .refresh-spinner {
+            width: 18px;
+            height: 18px;
+            border: 2px solid #c8e0cf;
+            border-top-color: #2f9e5a;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            display: inline-block;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .feed-list {
+            background-color: transparent;
+            padding: 8px 0 20px 0;
+        }
+
+        .feed-card {
+            background-color: #ffffff;
+            margin-bottom: 8px;
+            padding: 14px 16px;
+            border-radius: 20px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02), 0 1px 2px rgba(0, 0, 0, 0.03);
+        }
+
+        .feed-wrapper {
+            display: flex;
+            gap: 12px;
+        }
+
+        .avatar {
+            flex-shrink: 0;
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 20px;
+            color: white;
+            background-color: #8e8e93;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+            overflow: hidden;
+        }
+
+        .avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .feed-content {
+            flex: 1;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: baseline;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            margin-bottom: 6px;
+        }
+
+        .username {
+            font-weight: 620;
+            font-size: 16px;
+            color: #1c1c1e;
+        }
+
+        .time {
+            font-size: 11px;
+            color: #8e8e93;
+            margin-left: 8px;
+        }
+
+        .text-content {
+            font-size: 15px;
+            line-height: 1.45;
+            color: #1d1d1f;
+            margin: 6px 0 10px 0;
+            word-break: break-word;
+            white-space: pre-wrap;
+        }
+
+        .feed-image {
+            margin-top: 10px;
+            padding: 0;
+            background-color: transparent;
+        }
+        .feed-image img {
+            max-width: 100%;
+            max-height: 180px;
+            width: auto;
+            height: auto;
+            object-fit: contain;
+            display: block;
+            margin: 0;
+            border-radius: 16px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+        }
+
+        .feed-card:not(:last-child)::after {
+            content: '';
+            display: block;
+            margin-top: 14px;
+            border-bottom: 0.5px solid rgba(100, 130, 100, 0.15);
+        }
+
+        .toast-message {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%) scale(0.9);
+            background-color: rgba(38, 68, 50, 0.9);
+            backdrop-filter: blur(12px);
+            color: #f1f9f0;
+            padding: 8px 18px;
+            border-radius: 40px;
+            font-size: 14px;
+            font-weight: 500;
+            z-index: 200;
+            opacity: 0;
+            transition: opacity 0.2s ease, transform 0.2s ease;
+            pointer-events: none;
+            white-space: nowrap;
+        }
+
+        .toast-message.show {
+            opacity: 1;
+            transform: translateX(-50%) scale(1);
+        }
+    </style>
+</head>
+<body>
+
+<div class="feed-container">
+    <div class="header">
+        <span class="header-left">
+            <img src="https://raw.githubusercontent.com/vul11037/haikaveh/refs/heads/main/%E6%BC%AB%E5%8D%B7%E7%90%BC%E6%9E%97/image/icon-left.png" alt="左侧图标">
+        </span>
+        <span class="header-title">『虚空终端』- 漫卷琼林</span>
+        <span class="header-right">
+            <img src="https://raw.githubusercontent.com/vul11037/haikaveh/refs/heads/main/%E6%BC%AB%E5%8D%B7%E7%90%BC%E6%9E%97/image/icon-right.png" alt="右侧图标">
+        </span>
+    </div>
+
+    <div id="refreshIndicator" class="refresh-indicator">
+        <span id="refreshText">下拉刷新</span>
+    </div>
+
+    <div id="feedList" class="feed-list"></div>
+</div>
+
+<div id="toastMsg" class="toast-message">新的资讯已送达</div>
+
+<script>
+    // ==================== 角色基础信息（头像、颜色等） ====================
+    const CHARACTERS = {
+        "卡维": {
+            userName: "AAA建筑师卡维",
+            avatarUrl: "https://raw.githubusercontent.com/vul11037/haikaveh/refs/heads/main/%E6%BC%AB%E5%8D%B7%E7%90%BC%E6%9E%97/images/%E5%8D%A1%E5%B7%A5%E4%BD%9C%E5%8F%B7%E5%A4%B4%E5%83%8F.jpg",
+            avatarColor: "#ffff7f",
+            avatarText: "卡"
+        },
+        "艾尔海森": {
+            userName: "书记官艾尔海森",
+            avatarUrl: "https://raw.githubusercontent.com/vul11037/haikaveh/refs/heads/main/%E6%BC%AB%E5%8D%B7%E7%90%BC%E6%9E%97/images/%E6%B5%B7%E5%B7%A5%E4%BD%9C%E5%8F%B7%E5%A4%B4%E5%83%8F.jpg",
+            avatarColor: "#45d7ab",
+            avatarText: "艾"
+        },
+        "梅赫拉克": {
+            userName: "梅赫拉克",
+            avatarUrl: "https://raw.githubusercontent.com/vul11037/haikaveh/refs/heads/main/%E6%BC%AB%E5%8D%B7%E7%90%BC%E6%9E%97/images/%E5%B0%8F%E6%A2%85%E5%A4%B4%E5%83%8F.jpg",
+            avatarColor: "#aaff7f",
+            avatarText: "梅"
+        },
+        "浮叶": {
+            userName: "oVO",
+            avatarUrl: "https://raw.githubusercontent.com/vul11037/haikaveh/refs/heads/main/%E6%BC%AB%E5%8D%B7%E7%90%BC%E6%9E%97/images/%E5%B0%8F%E6%B5%AE%E5%A4%B4%E5%83%8F.jpg",   // 请确保该图片存在
+            avatarColor: "#f35179",
+            avatarText: "浮"
+        },
+		"卡维2": {
+		    userName: "一次过方案",
+		    avatarUrl: "https://raw.githubusercontent.com/vul11037/haikaveh/refs/heads/main/%E6%BC%AB%E5%8D%B7%E7%90%BC%E6%9E%97/images/%E5%8D%A1%E5%A4%B4%E5%83%8F.jpg",
+		    avatarColor: "#ffaa7f",
+		    avatarText: "过"
+		},
+		"艾尔海森2": {
+		    userName: "小树苗",
+		    avatarUrl: "https://raw.githubusercontent.com/vul11037/haikaveh/refs/heads/main/%E6%BC%AB%E5%8D%B7%E7%90%BC%E6%9E%97/images/%E6%B5%B7%E5%A4%B4%E5%83%8F.jpg",
+		    avatarColor: "#00aa7f",
+		    avatarText: "苗",
+		}
+    };
+
+    // ==================== 每个角色的内容池（文案 + 配图） ====================
+    const POST_VARIANTS = {
+        "卡维": [
+            {
+                content: "今年排期已满！"
+            },
+            {
+                content: "终于完成了智慧宫穹顶的修复！采光效果比预想中好",
+                imageUrl: "https://raw.githubusercontent.com/vul11037/haikaveh/refs/heads/main/%E6%BC%AB%E5%8D%B7%E7%90%BC%E6%9E%97/images/%E6%99%BA%E6%85%A7%E5%AE%AB%E4%BF%AE%E5%A4%8D.jpg",
+                alt: "智慧宫修复"
+            },
+            {
+                content: "画图的时候不能光盯着平面的图纸，多想想建成的样子",
+            },
+            {
+                content: "在旧书摊淘到一本《赤王古文字考据》，如果能将文字化为装饰运用在建筑上应该会很有趣",
+            }
+        ],
+        "艾尔海森": [
+            {
+                content: "提交文件前请仔细核对格式",
+            }
+        ],
+        "梅赫拉克": [
+            {
+                content: "喵呜喵喵！咪喵喵咪！",
+            },
+            {
+                content: "哔啵哔！",
+            },
+            {
+                content: "遇到了新朋友，浮叶分享了午餐。\n希望它明天还来～ 🐾",
+                imageUrl: "https://raw.githubusercontent.com/vul11037/haikaveh/refs/heads/main/%E6%BC%AB%E5%8D%B7%E7%90%BC%E6%9E%97/images/%E7%8C%AB%E7%8C%AB%E4%BC%99%E4%BC%B4.jpg",
+                alt: "猫咪朋友"
+            }
+        ],
+        "浮叶": [
+            {
+                content: "今天吃什么？\nA.汉堡 B.塔克 C.炸鸡 D.蛋挞"
+            },
+            {
+                content: "牛肉汉堡，好吃😋",
+            },
+			{
+			    content: "好像有什么香气",
+				imageUrl: "https://raw.githubusercontent.com/vul11037/haikaveh/refs/heads/main/%E6%BC%AB%E5%8D%B7%E7%90%BC%E6%9E%97/images/%E7%83%A4%E5%B0%8F%E7%8C%AA.jpg",
+				alt: "烤小猪"
+			}
+        ],
+		"卡维2": [
+		    {
+		        content: "家里进老鼠了？"
+		    },
+		    {
+		        content: "有人又在偷懒",
+		    },
+			{
+			    content: "可爱(*^ω^*)",
+			    imageUrl: "https://raw.githubusercontent.com/vul11037/haikaveh/refs/heads/main/%E6%BC%AB%E5%8D%B7%E7%90%BC%E6%9E%97/images/%E6%8D%8F%E8%84%B8.jpg",
+			    alt: "捏脸"
+			},
+			{
+			    content: "酒馆的鱼卷很好吃！",
+			    imageUrl: "https://raw.githubusercontent.com/vul11037/haikaveh/refs/heads/main/%E6%BC%AB%E5%8D%B7%E7%90%BC%E6%9E%97/images/%E5%85%B0%E5%B7%B4%E5%BE%B7%E9%85%92%E9%A6%86.jpg",
+			    alt: "酒馆"
+			}
+		],
+		"艾尔海森2": [
+		    {
+		        content: "今晚吃萨布兹炖肉"
+		    },
+			{
+			    content: "分享图片",
+			    imageUrl: "https://raw.githubusercontent.com/vul11037/haikaveh/refs/heads/main/%E6%BC%AB%E5%8D%B7%E7%90%BC%E6%9E%97/images/%E7%83%A4%E8%82%89.jpg",
+			    alt: "烤肉"
+			}
+		]
+    };
+
+    // 随机时间池
+    const TIME_OPTIONS = [
+        "刚刚", "2分钟前", "8分钟前", "15分钟前", "半小时前", "1小时前", "2小时前", "3小时前",
+        "昨天 07:23", "昨天 10:15", "昨天 12:00", "昨天 14:40", "昨天 19:08",
+        "前天 08:30", "前天 12:00", "前天 21:17"
+    ];
+
+    function getRandomTime() {
+        return TIME_OPTIONS[Math.floor(Math.random() * TIME_OPTIONS.length)];
+    }
+
+    function getRandomPostForCharacter(charKey) {
+        const variants = POST_VARIANTS[charKey];
+        if (!variants || variants.length === 0) {
+            // 降级处理（理论上不会发生）
+            return {
+                userName: CHARACTERS[charKey]?.userName || "未知",
+                avatarType: "image",
+                avatarUrl: CHARACTERS[charKey]?.avatarUrl || "",
+                content: "暂无动态",
+                time: getRandomTime(),
+                imageUrl: "",
+                alt: ""
+            };
+        }
+        const randomIndex = Math.floor(Math.random() * variants.length);
+        const variant = variants[randomIndex];
+        const char = CHARACTERS[charKey];
+       return {
+           userName: char.userName,
+           avatarType: "image",
+           avatarUrl: char.avatarUrl,
+           content: variant.content,
+           // time: "",            // 不设置 time 字段
+           imageUrl: variant.imageUrl,
+           alt: variant.alt
+       };
+    }
+
+    // 生成朋友圈列表（固定显示10条，角色从四个中随机）
+   function generateFeedList(count) {
+       // 1. 构建所有可能的帖子池（角色 + 变体）
+       const allPossiblePosts = [];
+       for (const [charKey, variants] of Object.entries(POST_VARIANTS)) {
+           const char = CHARACTERS[charKey];
+           if (!char) continue;
+           for (const variant of variants) {
+               allPossiblePosts.push({
+                   userName: char.userName,
+                   avatarType: "image",
+                   avatarUrl: char.avatarUrl,
+                   content: variant.content,
+                    // time: "",            // 不设置 time 字段
+                   imageUrl: variant.imageUrl,
+                   alt: variant.alt
+               });
+           }
+       }
+       // 2. 随机打乱整个池子
+       for (let i = allPossiblePosts.length - 1; i > 0; i--) {
+           const j = Math.floor(Math.random() * (i + 1));
+           [allPossiblePosts[i], allPossiblePosts[j]] = [allPossiblePosts[j], allPossiblePosts[i]];
+       }
+       // 3. 取前 count 条（自然不重复）
+       const result = allPossiblePosts.slice(0, count);
+       // 4. 如果池子里的总数不足 count，则允许重复（可以补随机，但一般不会）
+       // 5. 给每条加上随机时间（时间可以重复没关系）
+       for (const post of result) {
+            // time: "",            // 不设置 time 字段
+       }
+       return result;
+   }
+
+    // DOM 元素
+    const feedListEl = document.getElementById('feedList');
+    const refreshIndicator = document.getElementById('refreshIndicator');
+    const refreshTextSpan = document.getElementById('refreshText');
+    const toastMsg = document.getElementById('toastMsg');
+
+    let isRefreshing = false;
+    let refreshReady = false;
+    let isPullActive = false;
+    let startY = 0;
+    let startScrollTop = 0;
+    let isTouchMoving = false;
+    const PULL_THRESHOLD = 55;
+    const MAX_PULL_HEIGHT = 70;
+    const DISPLAY_COUNT = 10;
+
+    function showToast(text, duration = 1500) {
+        if (!toastMsg) return;
+        toastMsg.innerText = text;
+        toastMsg.classList.add('show');
+        setTimeout(() => toastMsg.classList.remove('show'), duration);
+    }
+
+    function escapeHtml(str) {
+        if (!str) return '';
+        return str.replace(/[&<>]/g, function(m) {
+            if (m === '&') return '&amp;';
+            if (m === '<') return '&lt;';
+            if (m === '>') return '&gt;';
+            return m;
+        });
+    }
+
+    function renderFeeds(feedsArray) {
+        if (!feedListEl) return;
+        if (!feedsArray || feedsArray.length === 0) {
+            feedListEl.innerHTML = '<div class="empty-tip"> 暂时没有资讯 </div>';
+            return;
+        }
+        let html = '';
+        for (const feed of feedsArray) {
+            let avatarHtml = `<img src="${feed.avatarUrl}" alt="avatar">`;
+            const imageHtml = feed.imageUrl ? `
+                <div class="feed-image">
+                    <img src="${feed.imageUrl}" alt="${escapeHtml(feed.alt)}" loading="lazy">
+                </div>
+            ` : '';
+            html += `
+                <div class="feed-card">
+                    <div class="feed-wrapper">
+                        <div class="avatar">${avatarHtml}</div>
+                        <div class="feed-content">
+                            <div class="user-info">
+                                <span class="username">${escapeHtml(feed.userName)}</span>
+                                <span class="time">${escapeHtml(feed.time)}</span>
+                            </div>
+                            <div class="text-content">${escapeHtml(feed.content).replace(/\n/g, '<br>')}</div>
+                            ${imageHtml}
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+        feedListEl.innerHTML = html;
+    }
+
+    function refreshContent() {
+        const newFeeds = generateFeedList(DISPLAY_COUNT);
+        renderFeeds(newFeeds);
+        showToast('新的资讯已送达', 1200);
+    }
+
+    function performRefresh() {
+        if (isRefreshing) return Promise.resolve();
+        isRefreshing = true;
+        if (refreshTextSpan && refreshIndicator) {
+            refreshTextSpan.innerHTML = '<span class="refresh-spinner"></span> 获取资讯中…';
+            refreshIndicator.style.height = '44px';
+        }
+        return new Promise((resolve) => {
+            setTimeout(() => {
+                refreshContent();
+                resetRefreshIndicator();
+                isRefreshing = false;
+                resolve();
+            }, 500);
+        }).catch(() => {
+            resetRefreshIndicator();
+            isRefreshing = false;
+            showToast('请检查『虚空终端』连接情况', 1200);
+        });
+    }
+
+    function resetRefreshIndicator() {
+        if (refreshIndicator) refreshIndicator.style.height = '0px';
+        if (refreshTextSpan) refreshTextSpan.innerHTML = '下拉获取资讯';
+        refreshReady = false;
+        isPullActive = false;
+    }
+
+    function updatePullProgress(distance) {
+        if (isRefreshing) return;
+        let pullDist = Math.min(distance, MAX_PULL_HEIGHT);
+        if (pullDist <= 0) {
+            refreshIndicator.style.height = '0px';
+            return;
+        }
+        refreshIndicator.style.height = pullDist + 'px';
+        if (pullDist >= PULL_THRESHOLD) {
+            if (!refreshReady) {
+                refreshReady = true;
+                refreshTextSpan.innerHTML = '⬇️ 释放获取资讯';
+            }
+        } else {
+            if (refreshReady) refreshReady = false;
+            refreshTextSpan.innerHTML = '⬇️ 下拉获取资讯';
+        }
+    }
+
+    // 触摸事件
+    function onTouchStart(e) {
+        if (isRefreshing) return;
+        const touch = e.touches[0];
+        startY = touch.clientY;
+        startScrollTop = window.pageYOffset || document.documentElement.scrollTop || 0;
+        isTouchMoving = false;
+    }
+
+    function onTouchMove(e) {
+        if (isRefreshing) return;
+        if (!startY) return;
+        const touch = e.touches[0];
+        const deltaY = touch.clientY - startY;
+        const currentScrollTop = window.pageYOffset || document.documentElement.scrollTop || 0;
+        if (currentScrollTop === 0 && deltaY > 0) {
+            e.preventDefault();
+            isTouchMoving = true;
+            let pullDistance = Math.min(deltaY, MAX_PULL_HEIGHT + 8);
+            updatePullProgress(pullDistance);
+            isPullActive = true;
+        } else {
+            if (isPullActive) {
+                resetRefreshIndicator();
+                isPullActive = false;
+            }
+        }
+    }
+
+    function onTouchEnd(e) {
+        if (isRefreshing) {
+            if (isPullActive) resetRefreshIndicator();
+            startY = 0;
+            isPullActive = false;
+            return;
+        }
+        if (refreshReady && !isRefreshing) {
+            performRefresh().then(() => {
+                resetRefreshIndicator();
+                startY = 0;
+                isPullActive = false;
+                refreshReady = false;
+            });
+        } else {
+            if (refreshIndicator && refreshIndicator.style.height !== '0px') resetRefreshIndicator();
+            refreshReady = false;
+            isPullActive = false;
+        }
+        startY = 0;
+        isTouchMoving = false;
+    }
+
+    // 鼠标支持（PC）
+    let mouseStartY = 0;
+    let mouseDragging = false;
+    function onMouseDown(e) {
+        if (isRefreshing) return;
+        mouseStartY = e.clientY;
+        mouseDragging = true;
+    }
+    function onMouseMove(e) {
+        if (!mouseDragging || isRefreshing) return;
+        const deltaY = e.clientY - mouseStartY;
+        const currentScrollTop = window.pageYOffset || document.documentElement.scrollTop || 0;
+        if (currentScrollTop === 0 && deltaY > 0 && !isRefreshing) {
+            let pullDist = Math.min(deltaY, MAX_PULL_HEIGHT);
+            updatePullProgress(pullDist);
+            if (pullDist >= PULL_THRESHOLD && !refreshReady) {
+                refreshReady = true;
+                refreshTextSpan.innerHTML = '⬇️ 释放获取资讯';
+            } else if (pullDist < PULL_THRESHOLD && refreshReady) {
+                refreshReady = false;
+                refreshTextSpan.innerHTML = '⬇️ 下拉获取资讯';
+            }
+            isPullActive = true;
+        } else {
+            if (isPullActive && currentScrollTop !== 0) {
+                resetRefreshIndicator();
+                isPullActive = false;
+            }
+        }
+    }
+    function onMouseUp(e) {
+        if (!mouseDragging) return;
+        if (refreshReady && !isRefreshing && isPullActive) {
+            performRefresh().then(() => {
+                resetRefreshIndicator();
+                refreshReady = false;
+                isPullActive = false;
+            });
+        } else {
+            if (refreshIndicator && refreshIndicator.style.height !== '0px') resetRefreshIndicator();
+            refreshReady = false;
+            isPullActive = false;
+        }
+        mouseDragging = false;
+    }
+
+    function bindEvents() {
+        document.addEventListener('touchstart', onTouchStart, { passive: false });
+        document.addEventListener('touchmove', onTouchMove, { passive: false });
+        document.addEventListener('touchend', onTouchEnd);
+        document.addEventListener('mousedown', onMouseDown);
+        document.addEventListener('mousemove', onMouseMove);
+        document.addEventListener('mouseup', onMouseUp);
+        window.addEventListener('scroll', () => {
+            if (isRefreshing) return;
+            const scrollTop = window.pageYOffset || document.documentElement.scrollTop || 0;
+            if (scrollTop !== 0 && isPullActive) {
+                resetRefreshIndicator();
+                isPullActive = false;
+                refreshReady = false;
+            }
+        });
+    }
+
+    // 初始化
+    function init() {
+        const initialFeeds = generateFeedList(DISPLAY_COUNT);
+        renderFeeds(initialFeeds);
+        bindEvents();
+        resetRefreshIndicator();
+        isRefreshing = false;
+    }
+    init();
+</script>
+</body>
+</html>
